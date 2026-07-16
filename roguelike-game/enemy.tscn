@@ -253,5 +253,17 @@ shape = SubResource("CapsuleShape2D_hgro5")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="sight" unique_id=295560572]
 shape = SubResource("CircleShape2D_7k104")
 
+[node name="hand_marker" type="Marker2D" parent="." unique_id=619169306]
+
+[node name="weapon" type="Area2D" parent="hand_marker" unique_id=984881999]
+
+[node name="sprite" type="Sprite2D" parent="hand_marker/weapon" unique_id=774381303]
+
+[node name="hitbox_shape" type="CollisionShape2D" parent="hand_marker/weapon" unique_id=2046340513]
+
+[node name="attack_cooldown" type="Timer" parent="." unique_id=1021307470]
+
+[node name="attack_animation_timer" type="Timer" parent="." unique_id=854961241]
+
 [connection signal="body_entered" from="sight" to="." method="_on_sight_body_entered"]
 [connection signal="body_exited" from="sight" to="." method="_on_sight_body_exited"]

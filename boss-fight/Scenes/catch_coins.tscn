@@ -58,8 +58,10 @@ offset_right = 1202.0
 offset_bottom = 659.0
 
 [node name="Players" type="Node2D" parent="." unique_id=1898734785]
+position = Vector2(600, 357)
 
 [node name="Coins" type="Node2D" parent="." unique_id=78996623]
+position = Vector2(2, 4)
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=615507723]
 position = Vector2(600, 355)

@@ -31,7 +31,9 @@ var local_player_id: int = 0
 # ============================================================
 # LIFECYCLE
 # ============================================================
+
 func _ready() -> void:
+	# ❗ NO lobby cleanup – we reuse existing players
 	_setup_game()
 	_start_game()
 
@@ -59,7 +61,7 @@ func _start_game() -> void:
 	_on_game_start()
 
 # ============================================================
-# VIRTUAL FUNCTIONS - كل لعبة تعدلهم
+# VIRTUAL FUNCTIONS
 # ============================================================
 func _on_game_start() -> void:
 	pass
@@ -67,14 +69,63 @@ func _on_game_start() -> void:
 func _on_game_end() -> void:
 	pass
 
+# ============================================================
+# PLAYER PLACEMENT – يستخدم شخصيات اللوبي الموجودة مسبقاً
+# ============================================================
 func _on_player_added(player_id: int, player_name: String, skin_path: String) -> void:
-	pass
+	# حساب موقع الإسباون (وسط الشاشة + إزاحة بسيطة)
+	var spawn_index = players_data.size() - 1
+	var spawn_pos = Vector2(640 + (spawn_index * 40), 360 + (spawn_index * 40))
+
+	# إرسال للجميع (السيرفر + العملاء) مع استدعاء محلي
+	reposition_player.rpc(player_id, spawn_pos)
+
+@rpc("authority", "call_local", "reliable")
+func reposition_player(pid: int, pos: Vector2) -> void:
+	# البحث عن اللاعب الموجود في مستوى Level (الوالد)
+	var level_node = get_parent()
+	if not level_node:
+		level_node = get_tree().current_scene
+
+	var player_node = level_node.get_node_or_null(str(pid))
+	if not player_node:
+		# fallback inside a "Players" container if any
+		var container = get_node_or_null("Players")
+		if container:
+			player_node = container.get_node_or_null(str(pid))
+
+	if not player_node:
+		push_warning("Could not find player node for ID ", pid)
+		return
+
+	# 1. إظهار وتفعيل اللاعب
+	player_node.visible = true
+	player_node.z_index = 10
+	player_node.global_position = pos
+
+	player_node.set_process(true)
+	player_node.set_physics_process(true)
+	player_node.set_process_unhandled_input(true)
+
+	if player_node.has_method("set_movement_enabled"):
+		player_node.set_movement_enabled(true)
+
+	# 2. تفعيل التصادمات
+	for child in player_node.get_children():
+		if child is CollisionObject2D:
+			child.set_deferred("disabled", false)
+
+	# 3. تخزين المرجع
+	if players_data.has(pid):
+		players_data[pid]["node"] = player_node
+
+	print("✅ Player ", pid, " positioned at ", pos, " on peer ", multiplayer.get_unique_id())
 
 func _on_player_score_updated(player_id: int, new_score: int) -> void:
 	update_score_ui.rpc(player_id, new_score)
 
 # ============================================================
-# ADD PLAYER - تستدعي من اللوبي
+# ADD PLAYER (called from lobby) – server triggers placement
 # ============================================================
 func add_player(player_id: int, player_name: String, skin_path: String) -> void:
 	print("📥 BaseMiniGame.add_player: ", player_name, " (", player_id, ")")
@@ -85,14 +136,14 @@ func add_player(player_id: int, player_name: String, skin_path: String) -> void:
 			"score": 0,
 			"node": null
 		}
-		print("✅ Player ", player_id, " added to players_data")
 	
 	if multiplayer and multiplayer.multiplayer_peer:
 		if player_id == multiplayer.get_unique_id():
 			local_player_id = player_id
-			print("🎯 Local player: ", player_id)
-	
-	_on_player_added(player_id, player_name, skin_path)
+		
+		# Only the server triggers repositioning
+		if multiplayer.is_server():
+			_on_player_added(player_id, player_name, skin_path)
 
 # ============================================================
 # UPDATE SCORE
@@ -106,10 +157,6 @@ func update_score_ui(player_id: int, new_score: int) -> void:
 		var local_score_label = get_node_or_null("UI/LocalScore")
 		if local_score_label:
 			local_score_label.text = "Your Score: " + str(new_score)
-	
-	var player_node = get_node_or_null("Players/" + str(player_id))
-	if player_node and player_node.has_method("update_score"):
-		player_node.update_score(new_score)
 
 # ============================================================
 # END GAME
@@ -128,7 +175,6 @@ func _end_game() -> void:
 	var results = {}
 	for player_id in players_data.keys():
 		results[player_id] = players_data[player_id].get("score", 0)
-		print("📊 ", players_data[player_id]["name"], ": ", results[player_id], " points")
 	
 	show_game_over.rpc(results)
 	

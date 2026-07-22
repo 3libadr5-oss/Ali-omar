@@ -1,11 +1,7 @@
 extends Control
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 1. الثوابت والمتغيرات العامة
-# ============================================================
-# ============================================================
 # ============================================================
 
 const DEFAULT_PORT: int = 7070
@@ -14,11 +10,7 @@ const COUNTDOWN_DURATION: int = 5
 enum GameMode { AUTO, MANUAL }
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 2. المتغيرات المُصدَّرة (Export Variables)
-# ============================================================
-# ============================================================
 # ============================================================
 
 @export_group("🎮 Skins (الشخصيات)")
@@ -65,11 +57,7 @@ enum GameMode { AUTO, MANUAL }
 @export var score_to_win: int = 3
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 3. مراجع واجهة المستخدم (UI References)
-# ============================================================
-# ============================================================
 # ============================================================
 
 @onready var name_input: LineEdit = $UI/TopBar/NameInput
@@ -93,11 +81,7 @@ enum GameMode { AUTO, MANUAL }
 @onready var mode_container: HBoxContainer = $UI/ModeContainer
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 4. مراجع شاشة التحميل (Loading Screen References)
-# ============================================================
-# ============================================================
+# 🎯 4. مراجع شاشة التحميل (Loading Screen)
 # ============================================================
 
 @onready var loading_screen: Panel = $UI/LoadingScreen
@@ -107,11 +91,7 @@ enum GameMode { AUTO, MANUAL }
 @onready var loading_status: Label = $UI/LoadingScreen/StatusLabel
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 5. متغيرات الحالة (State Variables)
-# ============================================================
-# ============================================================
 # ============================================================
 
 var skins: Array = []
@@ -148,12 +128,11 @@ var slot_tween: Tween = null
 var spawned_players: Array = []
 var _queued_minigame_path: String = ""
 
-# ============================================================
-# ============================================================
+# ✅ NEW GUARD: prevents overlapping spawn-all operations
+var is_respawning: bool = false
+
 # ============================================================
 # 🎯 6. دورة حياة اللعبة (Lifecycle)
-# ============================================================
-# ============================================================
 # ============================================================
 
 func _ready() -> void:
@@ -179,11 +158,7 @@ func _ready() -> void:
 	multiplayer.connection_failed.connect(_on_connection_failed)
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 7. تحديث كل إطار (Process)
-# ============================================================
-# ============================================================
 # ============================================================
 
 func _process(delta: float) -> void:
@@ -209,12 +184,10 @@ func _process(delta: float) -> void:
 		else:
 			loading_status.text = "✅ Ready to Start!"
 
-# ============================================================
-# ============================================================
+	# ❌ REMOVED periodic lobby check: was the source of overlapping spawns
+
 # ============================================================
 # 🎯 8. تحميل الموارد (Resource Loading)
-# ============================================================
-# ============================================================
 # ============================================================
 
 func _load_resources() -> void:
@@ -239,17 +212,9 @@ func _load_resources() -> void:
 	if minigame4: minigames.append(minigame4)
 	if minigame5: minigames.append(minigame5)
 	if minigame6: minigames.append(minigame6)
-	
-	print("✅ Loaded ", skins.size(), " skins")
-	print("✅ Loaded ", maps.size(), " maps")
-	print("✅ Loaded ", minigames.size(), " mini games")
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 9. إعدادات واجهة المستخدم (UI Setup)
-# ============================================================
-# ============================================================
 # ============================================================
 
 func _reset_ui() -> void:
@@ -284,18 +249,16 @@ func _reset_ui() -> void:
 	load_progress = 0.0
 	player_scores.clear()
 	spawned_players.clear()
+	is_respawning = false
 	
 	name_input.editable = true
 	ip_input.editable = true
 	room_code_input.editable = true
 	host_button.disabled = false
 	join_button.disabled = false
+
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 10. إظهار واجهة اللوبي (Show Lobby UI) - المعدل
-# ============================================================
-# ============================================================
+# 🎯 10. إظهار واجهة اللوبي (Show Lobby UI) - مُصلح
 # ============================================================
 
 func _show_lobby_ui() -> void:
@@ -317,31 +280,34 @@ func _show_lobby_ui() -> void:
 	
 	skin_container.visible = false
 	
-	spawned_players.clear()  # ✅ تنظيف القائمة
-	
-	if current_game_mode == GameMode.AUTO:
-		minigame_container.visible = false
-	else:
-		minigame_container.visible = true
+	if multiplayer.is_server() and not game_started and not players.is_empty():
+		call_deferred("_check_and_respawn_players")
+
 # ============================================================
+# 🎯 11. التحقق وإعادة spawn اللاعبين
 # ============================================================
+
+func _check_and_respawn_players() -> void:
+	await get_tree().process_frame
+	if spawned_players.is_empty() and not players.is_empty():
+		_respawn_all_players_in_lobby()
+
 # ============================================================
-# 🎯 11. مسح المستوى (Clear Level) - المعدل
-# ============================================================
-# ============================================================
+# 🎯 12. مسح المستوى (Clear Level)
 # ============================================================
 
 func _clear_level() -> void:
 	for child in level_node.get_children():
 		child.queue_free()
-	spawned_players.clear()  # ✅ تنظيف القائمة
+	
+	spawned_players.clear()
+	is_respawning = false
+	
+	if slot_tween and slot_tween.is_running():
+		slot_tween.kill()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 12. إعدادات أوضاع اللعب (Game Mode Setup)
-# ============================================================
-# ============================================================
+# 🎯 13. إعدادات أوضاع اللعب (Game Mode Setup)
 # ============================================================
 
 func _setup_game_mode_buttons() -> void:
@@ -366,11 +332,7 @@ func _setup_game_mode_buttons() -> void:
 	_set_auto_mode()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 13. أوضاع اللعب (Auto / Manual)
-# ============================================================
-# ============================================================
+# 🎯 14. أوضاع اللعب (Auto / Manual)
 # ============================================================
 
 func _set_auto_mode() -> void:
@@ -387,11 +349,7 @@ func _set_manual_mode() -> void:
 	minigame_container.visible = true
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 14. قائمة الألعاب التلقائية (Auto Queue)
-# ============================================================
-# ============================================================
+# 🎯 15. قائمة الألعاب التلقائية (Auto Queue)
 # ============================================================
 
 func _prepare_auto_queue() -> void:
@@ -405,8 +363,6 @@ func _prepare_auto_queue() -> void:
 	for i in range(count):
 		if shuffled[i] != null:
 			auto_play_queue.append(shuffled[i])
-	
-	print("🎯 Auto Queue Ready: ", auto_play_queue.size(), " games")
 
 func _get_next_auto_game() -> MiniGameData:
 	if auto_play_queue.is_empty():
@@ -417,11 +373,7 @@ func _get_next_auto_game() -> MiniGameData:
 	return next_game
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 15. واجهة اختيار الجلود (Skin UI)
-# ============================================================
-# ============================================================
+# 🎯 16. واجهة اختيار الجلود (Skin UI)
 # ============================================================
 
 func _create_skin_buttons() -> void:
@@ -444,11 +396,7 @@ func _create_skin_buttons() -> void:
 		skin_buttons.append(button)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 16. التحكم في قائمة الجلود (Skin Menu Toggle)
-# ============================================================
-# ============================================================
+# 🎯 17. التحكم في قائمة الجلود (Skin Menu Toggle)
 # ============================================================
 
 func _toggle_skin_menu() -> void:
@@ -457,11 +405,7 @@ func _toggle_skin_menu() -> void:
 	skins_button.text = "❌ Hide Skins" if skin_menu_visible else "🎨 Skins"
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 17. اختيار الجلد (Skin Selection)
-# ============================================================
-# ============================================================
+# 🎯 18. اختيار الجلد (Skin Selection)
 # ============================================================
 
 func _on_skin_selected(index: int) -> void:
@@ -485,16 +429,11 @@ func _on_skin_selected(index: int) -> void:
 		
 		if multiplayer.is_server():
 			_update_all_players()
-			_replace_player_skin(my_id, players[my_id]["name"], index)
 		else:
 			send_skin_choice.rpc_id(1, index)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 18. RPC إرسال اختيار الجلد
-# ============================================================
-# ============================================================
+# 🎯 19. RPC إرسال اختيار الجلد (مُصلح)
 # ============================================================
 
 @rpc("any_peer", "call_local", "reliable")
@@ -503,17 +442,15 @@ func send_skin_choice(skin_index: int) -> void:
 		return
 	
 	var id = multiplayer.get_remote_sender_id()
-	if players.has(id):
-		players[id]["skin_index"] = skin_index
-		_update_all_players()
-		_replace_player_skin(id, players[id]["name"], skin_index)
+	if not players.has(id):
+		return
+	
+	players[id]["skin_index"] = skin_index
+	_update_all_players()
+	_update_player_list.rpc()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 19. واجهة اختيار الخريطة (Map UI)
-# ============================================================
-# ============================================================
+# 🎯 20. واجهة اختيار الخريطة (Map UI)
 # ============================================================
 
 func _create_map_buttons() -> void:
@@ -536,11 +473,7 @@ func _create_map_buttons() -> void:
 		map_buttons.append(button)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 20. اختيار الخريطة (Map Selection)
-# ============================================================
-# ============================================================
+# 🎯 21. اختيار الخريطة (Map Selection)
 # ============================================================
 
 func _on_map_selected(index: int) -> void:
@@ -561,11 +494,7 @@ func _on_map_selected(index: int) -> void:
 	update_map_selection.rpc(index)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 21. RPC تحديث اختيار الخريطة
-# ============================================================
-# ============================================================
+# 🎯 22. RPC تحديث اختيار الخريطة
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -581,11 +510,7 @@ func update_map_selection(map_index: int) -> void:
 			map_buttons[i].scale = Vector2(1.0, 1.0)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 22. واجهة اختيار اللعبة المصغرة (Mini Game UI)
-# ============================================================
-# ============================================================
+# 🎯 23. واجهة اختيار اللعبة المصغرة (Mini Game UI)
 # ============================================================
 
 func _create_minigame_buttons() -> void:
@@ -608,11 +533,7 @@ func _create_minigame_buttons() -> void:
 		minigame_buttons.append(button)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 23. اختيار اللعبة المصغرة (Mini Game Selection)
-# ============================================================
-# ============================================================
+# 🎯 24. اختيار اللعبة المصغرة (Mini Game Selection)
 # ============================================================
 
 func _on_minigame_selected(index: int) -> void:
@@ -633,11 +554,7 @@ func _on_minigame_selected(index: int) -> void:
 	update_minigame_selection.rpc(index)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 24. RPC تحديث اختيار اللعبة المصغرة
-# ============================================================
-# ============================================================
+# 🎯 25. RPC تحديث اختيار اللعبة المصغرة
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -653,11 +570,7 @@ func update_minigame_selection(minigame_index: int) -> void:
 			minigame_buttons[i].scale = Vector2(1.0, 1.0)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 25. تحديث حالة الواجهة (Update Status Label)
-# ============================================================
-# ============================================================
+# 🎯 26. تحديث حالة الواجهة (Update Status Label)
 # ============================================================
 
 func _update_status_label() -> void:
@@ -667,11 +580,7 @@ func _update_status_label() -> void:
 	status_label.visible = true
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 26. أنيميشن الاختيار العشوائي (Slot Animation)
-# ============================================================
-# ============================================================
+# 🎯 27. أنيميشن الاختيار العشوائي (Slot Animation)
 # ============================================================
 
 func _start_slot_animation() -> void:
@@ -683,11 +592,7 @@ func _start_slot_animation() -> void:
 	_animate_slot_selection(target_index)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 27. تشغيل أنيميشن الاختيار
-# ============================================================
-# ============================================================
+# 🎯 28. تشغيل أنيميشن الاختيار
 # ============================================================
 
 func _animate_slot_selection(target_index: int) -> void:
@@ -722,11 +627,7 @@ func _animate_slot_selection(target_index: int) -> void:
 	slot_tween.tween_callback(_on_slot_animation_finished.bind(target_index))
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 28. تحديث إضاءة الخريطة في الأنيميشن
-# ============================================================
-# ============================================================
+# 🎯 29. تحديث إضاءة الخريطة في الأنيميشن
 # ============================================================
 
 func _update_slot_highlight(index: int) -> void:
@@ -739,11 +640,7 @@ func _update_slot_highlight(index: int) -> void:
 			map_buttons[i].scale = Vector2(1.0, 1.0)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 29. تأثير الفلاش في الأنيميشن
-# ============================================================
-# ============================================================
+# 🎯 30. تأثير الفلاش في الأنيميشن
 # ============================================================
 
 func _play_slot_flash(index: int) -> void:
@@ -754,11 +651,7 @@ func _play_slot_flash(index: int) -> void:
 		flash_tween.tween_property(button, "modulate", Color.WHITE, 0.05)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 30. نهاية أنيميشن الاختيار
-# ============================================================
-# ============================================================
+# 🎯 31. نهاية أنيميشن الاختيار
 # ============================================================
 
 func _on_slot_animation_finished(target_index: int) -> void:
@@ -770,11 +663,7 @@ func _on_slot_animation_finished(target_index: int) -> void:
 	sync_slot_result.rpc(target_index)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 31. تأثير الفوز في الأنيميشن
-# ============================================================
-# ============================================================
+# 🎯 32. تأثير الفوز في الأنيميشن
 # ============================================================
 
 func _play_win_effect() -> void:
@@ -791,11 +680,7 @@ func _play_win_effect() -> void:
 		await get_tree().create_timer(0.15).timeout
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 32. RPC مزامنة نتيجة الأنيميشن
-# ============================================================
-# ============================================================
+# 🎯 33. RPC مزامنة نتيجة الأنيميشن
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -805,81 +690,32 @@ func sync_slot_result(map_index: int) -> void:
 	_on_map_selected(map_index)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 33. استبدال جلد اللاعب (Replace Player Skin)
-# ============================================================
-# ============================================================
-# ============================================================
-
-func _replace_player_skin(id: int, name: String, skin_index: int) -> void:
-	var skin_path = skins[skin_index].scene.resource_path if skin_index < skins.size() and skins[skin_index] != null else "res://Player.tscn"
-	
-	var node_name = str(id)
-	var existing_player = level_node.get_node_or_null(node_name)
-	
-	if existing_player:
-		existing_player.name = node_name + "_deleting"
-		level_node.remove_child(existing_player)
-		existing_player.queue_free()
-		await get_tree().process_frame
-		if is_instance_valid(existing_player):
-			existing_player.free()
-		await get_tree().process_frame
-		var check_node = level_node.get_node_or_null(node_name)
-		if check_node:
-			check_node.name = node_name + "_old2"
-			level_node.remove_child(check_node)
-			check_node.queue_free()
-	
-	spawn_player.rpc(id, name, skin_path, game_started)
-# ============================================================
-# ============================================================
-# ============================================================
-# 🎯 34. ظهور اللاعب (Spawn Player) - المعدل
-# ============================================================
-# ============================================================
+# 🎯 34. ظهور اللاعب (Spawn Player) - FIXED
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
 func spawn_player(id: int, name: String, skin_path: String, started: bool) -> void:
+	# ✅ All peers (server + clients) execute this when called by the server.
+	# Authority annotation ensures only the server can call it.
+	
 	var node_name = str(id)
 	
-	# ✅ منع التكرار - لكن مع إمكانية إعادة spawn
-	if node_name in spawned_players:
-		# إذا كان اللاعب موجود بالفعل، نحذفه ونعيد spawn
-		var existing = level_node.get_node_or_null(node_name)
-		if existing:
-			existing.queue_free()
-			await get_tree().process_frame
-		spawned_players.erase(node_name)  # ✅ نشيله من القائمة عشان نقدر نعمله spawn تاني
+	# Clean up any previous instance of this player
+	_remove_existing_player(node_name)
+	await get_tree().process_frame
 	
-	spawned_players.append(node_name)
+	# FINAL GUARD: if a duplicate managed to slip in, abort
+	if level_node.get_node_or_null(node_name) != null:
+		print("Warning: Player %d already exists, skipping duplicate spawn." % id)
+		return
 	
-	# حذف أي لاعب قديم بنفس الاسم
-	var existing_player = level_node.get_node_or_null(node_name)
-	if existing_player:
-		existing_player.name = node_name + "_deleting"
-		level_node.remove_child(existing_player)
-		existing_player.queue_free()
-		await get_tree().process_frame
-		if is_instance_valid(existing_player):
-			existing_player.free()
-		await get_tree().process_frame
-		var check_node = level_node.get_node_or_null(node_name)
-		if check_node:
-			check_node.name = node_name + "_old2"
-			level_node.remove_child(check_node)
-			check_node.queue_free()
-	
-	# تحميل مشهد اللاعب
+	# Fallback to default player scene if skin not found
 	if not ResourceLoader.exists(skin_path):
 		skin_path = "res://Player.tscn"
 	
 	var player_scene = load(skin_path)
 	if not player_scene:
-		push_error("Failed to load player scene: " + skin_path)
-		spawned_players.erase(node_name)  # ✅ لو فشل، نشيله من القائمة
+		push_error("❌ Failed to load player scene: " + skin_path)
 		return
 	
 	var player_instance = player_scene.instantiate()
@@ -892,16 +728,14 @@ func spawn_player(id: int, name: String, skin_path: String, started: bool) -> vo
 	if player_instance.has_method("set_local_player"):
 		player_instance.set_local_player(is_local)
 	
+	# Configure lobby / game state
 	if not started:
 		player_instance.set_process(false)
 		player_instance.set_physics_process(false)
 		player_instance.set_process_unhandled_input(false)
-		player_instance.position = spawn_position
 		player_instance.scale = Vector2(lobby_scale, lobby_scale)
-		
 		if player_instance.has_method("set_movement_enabled"):
 			player_instance.set_movement_enabled(false)
-		
 		for child in player_instance.get_children():
 			if child is CollisionObject2D:
 				child.set_deferred("disabled", true)
@@ -910,23 +744,22 @@ func spawn_player(id: int, name: String, skin_path: String, started: bool) -> vo
 		player_instance.set_physics_process(true)
 		player_instance.set_process_unhandled_input(true)
 		player_instance.scale = Vector2(1.0, 1.0)
-		
 		if player_instance.has_method("set_movement_enabled"):
 			player_instance.set_movement_enabled(true)
-		
 		for child in player_instance.get_children():
 			if child is CollisionObject2D:
 				child.set_deferred("disabled", false)
 	
 	level_node.add_child(player_instance)
 	_setup_player_name_label(player_instance, name, id)
+	
+	if node_name not in spawned_players:
+		spawned_players.append(node_name)
+	
+	print("✅ Player spawned: ", name, " (ID: ", id, ") - Started: ", started)
 
 # ============================================================
-# ============================================================
-# ============================================================
 # 🎯 35. إضافة اسم اللاعب فوق الشخصية
-# ============================================================
-# ============================================================
 # ============================================================
 
 func _setup_player_name_label(player_node: Node, name: String, id: int) -> void:
@@ -945,11 +778,90 @@ func _setup_player_name_label(player_node: Node, name: String, id: int) -> void:
 	label.text = name
 
 # ============================================================
+# 🎯 36. دالة مساعدة لحذف اللاعب الموجود
 # ============================================================
+
+func _remove_existing_player(node_name: String) -> void:
+	var existing = level_node.get_node_or_null(node_name)
+	if existing:
+		level_node.remove_child(existing)
+		existing.queue_free()
+	
+	if node_name in spawned_players:
+		spawned_players.erase(node_name)
+
 # ============================================================
-# 🎯 36. استضافة اللعبة (Host)
+# 🎯 37. إعادة spawn جميع اللاعبين في اللوبي - مُصلح (مع Guard)
 # ============================================================
+
 # ============================================================
+# 🎯 37. إعادة spawn جميع اللاعبين في اللوبي - FIXED
+# ============================================================
+
+func _respawn_all_players_in_lobby() -> void:
+	if is_respawning:
+		return
+	is_respawning = true
+	
+	if not multiplayer.is_server():
+		is_respawning = false
+		return
+	
+	# Clear all current player nodes
+	spawned_players.clear()
+	for child in level_node.get_children():
+		if child is CharacterBody2D and child.name.is_valid_int():
+			child.queue_free()
+	
+	await get_tree().process_frame
+	
+	for pid in players.keys():
+		var skin_index = players[pid]["skin_index"]
+		var skin_path = "res://Player.tscn"   # fallback default
+		if skins.size() > 0 and skin_index < skins.size() and skins[skin_index] != null and skins[skin_index].scene:
+			skin_path = skins[skin_index].scene.resource_path
+		spawn_player.rpc(pid, players[pid]["name"], skin_path, false)
+	
+	await get_tree().process_frame
+	is_respawning = false
+
+# ============================================================
+# 🎯 38. ❌ _check_players_in_lobby() removed entirely
+# ============================================================
+
+# ============================================================
+# 🎯 39. تحديث كل اللاعبين - مُصلح (مع Guard)
+# ============================================================
+func _update_all_players() -> void:
+	if is_respawning:
+		return
+	is_respawning = true
+	
+	if not multiplayer.is_server():
+		is_respawning = false
+		return
+	
+	_update_player_list.rpc()
+	
+	spawned_players.clear()
+	for child in level_node.get_children():
+		if child is CharacterBody2D and child.name.is_valid_int():
+			child.queue_free()
+	
+	await get_tree().process_frame
+	
+	for pid in players.keys():
+		var skin_index = players[pid]["skin_index"]
+		var skin_path = "res://Player.tscn"
+		if skins.size() > 0 and skin_index < skins.size() and skins[skin_index] != null and skins[skin_index].scene:
+			skin_path = skins[skin_index].scene.resource_path
+		spawn_player.rpc(pid, players[pid]["name"], skin_path, game_started)
+	
+	await get_tree().process_frame
+	is_respawning = false
+
+# ============================================================
+# 🎯 40. استضافة اللعبة (Host)
 # ============================================================
 
 func _on_host_pressed() -> void:
@@ -979,7 +891,8 @@ func _on_host_pressed() -> void:
 	status_label.text = "✅ Waiting for players..."
 	status_label.visible = true
 	
-	_replace_player_skin(host_id, my_name, my_skin_index)
+	await get_tree().process_frame
+	_respawn_all_players_in_lobby()
 	_update_player_list.rpc()
 	
 	var skin_data = []
@@ -1008,23 +921,16 @@ func _on_host_pressed() -> void:
 			var data = {
 				"name": mg.name,
 				"scene_path": mg.scene.resource_path if mg.scene else "",
-				"icon_path": mg.icon.resource_path if mg.icon else ""
+				"icon_path": mg.icon.resource_path if mg.icon else "",
+				"description": mg.description if "description" in mg else "",
+				"max_players": mg.max_players if "max_players" in mg else 4,
+				"min_players": mg.min_players if "min_players" in mg else 2
 			}
-			if "description" in mg:
-				data["description"] = mg.description
-			if "max_players" in mg:
-				data["max_players"] = mg.max_players
-			if "min_players" in mg:
-				data["min_players"] = mg.min_players
 			minigame_data.append(data)
 	rpc("receive_minigame_data", minigame_data)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 37. الانضمام للعبة (Join)
-# ============================================================
-# ============================================================
+# 🎯 41. الانضمام للعبة (Join)
 # ============================================================
 
 func _on_join_pressed() -> void:
@@ -1054,11 +960,7 @@ func _on_join_pressed() -> void:
 	status_label.modulate = Color.YELLOW
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 38. أحداث الاتصال (Connection Events)
-# ============================================================
-# ============================================================
+# 🎯 42. أحداث الاتصال (Connection Events)
 # ============================================================
 
 func _on_connected_to_server() -> void:
@@ -1076,11 +978,7 @@ func _on_connection_failed() -> void:
 	_reset_ui()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 39. تحديد موقع اللاعب (Slot Position)
-# ============================================================
-# ============================================================
+# 🎯 43. تحديد موقع اللاعب (Slot Position)
 # ============================================================
 
 func _assign_slot_position(peer_id: int) -> void:
@@ -1093,11 +991,7 @@ func _assign_slot_position(peer_id: int) -> void:
 		peer_slot_map[peer_id] = slot_index
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 40. RPC إرسال اسم اللاعب
-# ============================================================
-# ============================================================
+# 🎯 44. RPC إرسال اسم اللاعب - مُصلح
 # ============================================================
 
 @rpc("any_peer", "call_local", "reliable")
@@ -1106,13 +1000,12 @@ func send_my_name(name: String, skin_index: int) -> void:
 		return
 	
 	var id = multiplayer.get_remote_sender_id()
-	
 	if players.has(id):
 		return
 	
 	_assign_slot_position(id)
 	players[id] = {"name": name, "skin_index": skin_index}
-	_replace_player_skin(id, name, skin_index)
+	
 	_send_full_state_to_client(id)
 	_update_all_players()
 	
@@ -1142,23 +1035,16 @@ func send_my_name(name: String, skin_index: int) -> void:
 			var data = {
 				"name": mg.name,
 				"scene_path": mg.scene.resource_path if mg.scene else "",
-				"icon_path": mg.icon.resource_path if mg.icon else ""
+				"icon_path": mg.icon.resource_path if mg.icon else "",
+				"description": mg.description if "description" in mg else "",
+				"max_players": mg.max_players if "max_players" in mg else 4,
+				"min_players": mg.min_players if "min_players" in mg else 2
 			}
-			if "description" in mg:
-				data["description"] = mg.description
-			if "max_players" in mg:
-				data["max_players"] = mg.max_players
-			if "min_players" in mg:
-				data["min_players"] = mg.min_players
 			minigame_data.append(data)
 	rpc_id(id, "receive_minigame_data", minigame_data)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 41. إرسال الحالة الكاملة للعميل
-# ============================================================
-# ============================================================
+# 🎯 45. إرسال الحالة الكاملة للعميل
 # ============================================================
 
 func _send_full_state_to_client(client_id: int) -> void:
@@ -1171,12 +1057,9 @@ func _send_full_state_to_client(client_id: int) -> void:
 			"position": player_positions[pid]
 		})
 	rpc_id(client_id, "receive_full_state", player_data, selected_map_index, selected_minigame_index)
+
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 42. RPC استقبال الحالة الكاملة - المعدل
-# ============================================================
-# ============================================================
+# 🎯 46. RPC استقبال الحالة الكاملة - مُصلح (بدون spawn)
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1184,10 +1067,6 @@ func receive_full_state(player_data: Array, map_index: int, minigame_index: int)
 	players.clear()
 	player_positions.clear()
 	peer_slot_map.clear()
-	_clear_level()
-	
-	# ✅ تنظيف القائمة قبل spawn
-	spawned_players.clear()
 	
 	for data in player_data:
 		var pid = data.get("id", 0)
@@ -1201,21 +1080,13 @@ func receive_full_state(player_data: Array, map_index: int, minigame_index: int)
 	
 	selected_map_index = map_index
 	selected_minigame_index = minigame_index
+	
 	_update_slot_highlight(map_index)
 	update_minigame_selection(minigame_index)
 	_update_player_list()
-	
-	for pid in players.keys():
-		var skin_index = players[pid]["skin_index"]
-		var skin_path = skins[skin_index].scene.resource_path if skin_index < skins.size() and skins[skin_index] != null else "res://Player.tscn"
-		spawn_player(pid, players[pid]["name"], skin_path, game_started)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 43. RPC استقبال بيانات الجلود
-# ============================================================
-# ============================================================
+# 🎯 47. استقبال بيانات الجلود
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1240,11 +1111,7 @@ func receive_skin_data(data: Array) -> void:
 		_on_skin_selected(0)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 44. RPC استقبال بيانات الخرائط
-# ============================================================
-# ============================================================
+# 🎯 48. استقبال بيانات الخرائط
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1267,11 +1134,7 @@ func receive_map_data(data: Array) -> void:
 	_create_map_buttons()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 45. RPC استقبال بيانات الألعاب المصغرة
-# ============================================================
-# ============================================================
+# 🎯 49. استقبال بيانات الألعاب المصغرة
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1299,11 +1162,7 @@ func receive_minigame_data(data: Array) -> void:
 		_on_minigame_selected(0)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 46. تحديث قائمة اللاعبين
-# ============================================================
-# ============================================================
+# 🎯 50. تحديث قائمة اللاعبين
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1321,31 +1180,9 @@ func _update_player_list() -> void:
 		player_list.add_item("🎮 " + skin_name + " - " + name)
 		if icon:
 			player_list.set_item_icon(player_list.item_count - 1, icon)
-# ============================================================
-# ============================================================
-# ============================================================
-# 🎯 47. تحديث كل اللاعبين - المعدل
-# ============================================================
-# ============================================================
-# ============================================================
-
-func _update_all_players() -> void:
-	_update_player_list.rpc()
-	
-	# ✅ نمسح الـ spawned_players عشان نعمل spawn جديد لكل اللاعبين
-	spawned_players.clear()
-	
-	for pid in players.keys():
-		var skin_index = players[pid]["skin_index"]
-		var skin_path = skins[skin_index].scene.resource_path if skin_index < skins.size() and skins[skin_index] != null else "res://Player.tscn"
-		spawn_player.rpc(pid, players[pid]["name"], skin_path, game_started)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 48. أحداث انضمام وانفصال اللاعبين
-# ============================================================
-# ============================================================
+# 🎯 51. أحداث انضمام وانفصال اللاعبين - مُصلح
 # ============================================================
 
 func _on_player_connected(id: int) -> void:
@@ -1360,32 +1197,22 @@ func _on_player_disconnected(id: int) -> void:
 		player_positions.erase(id)
 		peer_slot_map.erase(id)
 		
+		var node_name = str(id)
+		_remove_existing_player(node_name)
+		
 		_update_player_list.rpc()
-		remove_player.rpc(id)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 49. RPC إزالة لاعب
-# ============================================================
-# ============================================================
+# 🎯 52. RPC إزالة لاعب
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
 func remove_player(id: int) -> void:
 	var node_name = str(id)
-	var node = level_node.get_node_or_null(node_name)
-	if node:
-		node.name = node_name + "_deleting"
-		level_node.remove_child(node)
-		node.queue_free()
+	_remove_existing_player(node_name)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 50. بدء اللعبة (Start Game)
-# ============================================================
-# ============================================================
+# 🎯 53. بدء اللعبة (Start Game)
 # ============================================================
 
 func _on_start_pressed() -> void:
@@ -1407,11 +1234,7 @@ func _on_start_pressed() -> void:
 			_start_manual_mode()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 51. تهيئة النقاط
-# ============================================================
-# ============================================================
+# 🎯 54. تهيئة النقاط
 # ============================================================
 
 func _initialize_scores() -> void:
@@ -1420,11 +1243,7 @@ func _initialize_scores() -> void:
 		player_scores[player_id] = 0
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 52. بدء الوضع التلقائي (Auto Mode)
-# ============================================================
-# ============================================================
+# 🎯 55. بدء الوضع التلقائي (Auto Mode)
 # ============================================================
 
 func _start_auto_mode() -> void:
@@ -1443,11 +1262,7 @@ func _start_auto_mode() -> void:
 		_start_game_with_minigame(next_game)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 53. بدء الوضع اليدوي (Manual Mode)
-# ============================================================
-# ============================================================
+# 🎯 56. بدء الوضع اليدوي (Manual Mode)
 # ============================================================
 
 func _start_manual_mode() -> void:
@@ -1460,11 +1275,7 @@ func _start_manual_mode() -> void:
 		status_label.modulate = Color.RED
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 54. بدء اللعبة بلعبة مصغرة محددة
-# ============================================================
-# ============================================================
+# 🎯 57. بدء اللعبة بلعبة مصغرة محددة
 # ============================================================
 
 func _start_game_with_minigame(minigame_data: MiniGameData) -> void:
@@ -1482,11 +1293,7 @@ func _start_game_with_minigame(minigame_data: MiniGameData) -> void:
 	start_countdown.rpc(minigame_data.scene.resource_path)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 55. RPC بدء العد التنازلي
-# ============================================================
-# ============================================================
+# 🎯 58. RPC بدء العد التنازلي
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1501,11 +1308,7 @@ func start_countdown(minigame_path: String) -> void:
 		_queued_minigame_path = minigame_path
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 56. تحديث العد التنازلي
-# ============================================================
-# ============================================================
+# 🎯 59. تحديث العد التنازلي
 # ============================================================
 
 func _update_countdown_label() -> void:
@@ -1515,11 +1318,7 @@ func _update_countdown_label() -> void:
 		countdown_label.text = "GO!"
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 57. إنهاء العد التنازلي - المعدل
-# ============================================================
-# ============================================================
+# 🎯 60. إنهاء العد التنازلي
 # ============================================================
 
 func _finish_countdown() -> void:
@@ -1530,7 +1329,7 @@ func _finish_countdown() -> void:
 	countdown_label.visible = false
 	
 	if multiplayer.is_server():
-		spawned_players.clear()  # ✅ تنظيف القائمة
+		spawned_players.clear()
 		
 		var map_scene_path = ""
 		var map_image: Texture2D = null
@@ -1562,11 +1361,7 @@ func _finish_countdown() -> void:
 		hide_loading_screen.rpc()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 58. RPC إظهار شاشة التحميل
-# ============================================================
-# ============================================================
+# 🎯 61. RPC إظهار شاشة التحميل
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1584,15 +1379,9 @@ func show_loading_screen(map_name: String, minigame_name: String, map_image: Tex
 			loading_map_image.visible = true
 		else:
 			loading_map_image.visible = false
-		
-		print("🖼️ Loading: ", map_name, " | ", minigame_name)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 59. RPC إخفاء شاشة التحميل
-# ============================================================
-# ============================================================
+# 🎯 62. RPC إخفاء شاشة التحميل
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1601,20 +1390,13 @@ func hide_loading_screen() -> void:
 		loading_screen.visible = false
 		is_loading = false
 		load_progress = 0.0
-		print("🖼️ Loading screen hidden")
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 60. تحميل الخريطة المختارة
-# ============================================================
-# ============================================================
+# 🎯 63. تحميل الخريطة المختارة
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
 func load_selected_map(map_path: String) -> void:
-	print("🗺️ Loading map: ", map_path)
-	
 	for child in level_node.get_children():
 		if not (child is CharacterBody2D and child.name.is_valid_int()):
 			child.queue_free()
@@ -1625,24 +1407,13 @@ func load_selected_map(map_path: String) -> void:
 			var map_instance = map_scene.instantiate()
 			level_node.add_child(map_instance)
 			level_node.move_child(map_instance, 0)
-			print("✅ Map loaded successfully!")
-		else:
-			print("❌ Failed to load map scene!")
-	else:
-		print("⚠️ No map selected!")
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 61. تحميل اللعبة المصغرة المختارة
-# ============================================================
-# ============================================================
+# 🎯 64. تحميل اللعبة المصغرة المختارة
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
 func load_selected_minigame(minigame_path: String) -> void:
-	print("🎮 Loading minigame: ", minigame_path)
-	
 	if minigame_path != "" and ResourceLoader.exists(minigame_path):
 		var minigame_scene = load(minigame_path)
 		if minigame_scene:
@@ -1653,29 +1424,17 @@ func load_selected_minigame(minigame_path: String) -> void:
 					var skin_index = players[player_id]["skin_index"]
 					var skin_path = skins[skin_index].scene.resource_path if skin_index < skins.size() and skins[skin_index] != null else "res://Player.tscn"
 					minigame_instance.add_player(player_id, players[player_id]["name"], skin_path)
-					print("✅ Added player ", player_id, " to minigame")
 			
 			if minigame_instance.has_signal("game_finished"):
 				minigame_instance.game_finished.connect(_on_minigame_finished)
 			
 			level_node.add_child(minigame_instance)
-			print("✅ Minigame loaded successfully!")
-		else:
-			print("❌ Failed to load minigame scene!")
-	else:
-		print("⚠️ No minigame selected!")
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 62. نهاية اللعبة المصغرة
-# ============================================================
-# ============================================================
+# 🎯 65. نهاية اللعبة المصغرة
 # ============================================================
 
 func _on_minigame_finished(results: Dictionary) -> void:
-	print("🏆 Minigame finished with results: ", results)
-	
 	if not multiplayer.is_server():
 		return
 	
@@ -1686,7 +1445,6 @@ func _on_minigame_finished(results: Dictionary) -> void:
 		else:
 			player_scores[player_id] = points
 		
-		print("📊 Player ", player_id, " now has ", player_scores[player_id], " points")
 		update_score_display.rpc(player_id, player_scores[player_id])
 	
 	var winner_id = _check_winner()
@@ -1695,7 +1453,6 @@ func _on_minigame_finished(results: Dictionary) -> void:
 		return
 	
 	if current_game_mode == GameMode.AUTO:
-		print("🔄 Auto mode: preparing next game...")
 		await get_tree().create_timer(2.0).timeout
 		
 		if not auto_play_queue.is_empty():
@@ -1710,23 +1467,15 @@ func _on_minigame_finished(results: Dictionary) -> void:
 				await get_tree().create_timer(2.0).timeout
 				_return_to_lobby()
 	else:
-		print("🔄 Manual mode: returning to lobby...")
 		await get_tree().create_timer(3.0).timeout
 		_return_to_lobby()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 63. نظام النقاط
-# ============================================================
-# ============================================================
+# 🎯 66. نظام النقاط
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
 func update_score_display(player_id: int, score: int) -> void:
-	var player_name = players[player_id]["name"] if players.has(player_id) else "Player " + str(player_id)
-	print("🏆 ", player_name, " Score: ", score)
-	
 	var score_text = ""
 	for pid in player_scores.keys():
 		var name = players[pid]["name"] if players.has(pid) else "P" + str(pid)
@@ -1737,11 +1486,7 @@ func update_score_display(player_id: int, score: int) -> void:
 		status_label.visible = true
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 64. التحقق من الفائز
-# ============================================================
-# ============================================================
+# 🎯 67. التحقق من الفائز
 # ============================================================
 
 func _check_winner() -> int:
@@ -1766,11 +1511,7 @@ func _get_winner() -> int:
 	return winner if not tie else -1
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 65. إعلان الفائز
-# ============================================================
-# ============================================================
+# 🎯 68. إعلان الفائز
 # ============================================================
 
 func _declare_winner(winner_id: int) -> void:
@@ -1791,11 +1532,7 @@ func _declare_winner(winner_id: int) -> void:
 	_return_to_lobby()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 66. RPC إعلان الفائز
-# ============================================================
-# ============================================================
+# 🎯 69. RPC إعلان الفائز
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1806,11 +1543,7 @@ func declare_winner(winner_id: int, winner_name: String) -> void:
 	game_started = false
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 67. إنهاء الوضع التلقائي
-# ============================================================
-# ============================================================
+# 🎯 70. إنهاء الوضع التلقائي
 # ============================================================
 
 func _finish_auto_mode() -> void:
@@ -1824,16 +1557,10 @@ func _finish_auto_mode() -> void:
 		_return_to_lobby()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 68. العودة إلى اللوبي
-# ============================================================
-# ============================================================
+# 🎯 71. العودة إلى اللوبي - مُصلح
 # ============================================================
 
 func _return_to_lobby() -> void:
-	print("🔄 Returning to lobby...")
-	
 	player_scores.clear()
 	game_started = false
 	countdown_active = false
@@ -1854,13 +1581,13 @@ func _return_to_lobby() -> void:
 	await get_tree().create_timer(2.0).timeout
 	status_label.text = "Ready"
 	status_label.modulate = Color.WHITE
+	
+	await get_tree().process_frame
+	if multiplayer.is_server():
+		_respawn_all_players_in_lobby()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 69. RPC العودة إلى اللوبي
-# ============================================================
-# ============================================================
+# 🎯 72. RPC العودة إلى اللوبي
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1881,13 +1608,13 @@ func return_to_lobby() -> void:
 		await get_tree().create_timer(2.0).timeout
 		status_label.text = "Ready"
 		status_label.modulate = Color.WHITE
+	
+	await get_tree().process_frame
+	if multiplayer.is_server():
+		_respawn_all_players_in_lobby()
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 70. تفعيل حركة اللاعبين
-# ============================================================
-# ============================================================
+# 🎯 73. تفعيل حركة اللاعبين
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1902,21 +1629,12 @@ func enable_player_movement() -> void:
 			if child.has_method("set_movement_enabled"):
 				child.set_movement_enabled(true)
 			
-			if "movement_enabled" in child:
-				child.movement_enabled = true
-			
 			for sub_child in child.get_children():
 				if sub_child is CollisionObject2D:
 					sub_child.set_deferred("disabled", false)
-			
-			print("✅ Movement enabled for player: ", child.name)
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 71. إخفاء عناصر الواجهة
-# ============================================================
-# ============================================================
+# 🎯 74. إخفاء عناصر الواجهة
 # ============================================================
 
 @rpc("authority", "call_local", "reliable")
@@ -1934,11 +1652,7 @@ func hide_ui_elements() -> void:
 	mode_container.visible = false
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 72. دوال مساعدة (Utility)
-# ============================================================
-# ============================================================
+# 🎯 75. دوال مساعدة (Utility)
 # ============================================================
 
 func _get_local_ip() -> String:
@@ -1949,11 +1663,7 @@ func _get_local_ip() -> String:
 	return addresses[0] if addresses.size() > 0 else "127.0.0.1"
 
 # ============================================================
-# ============================================================
-# ============================================================
-# 🎯 73. التنظيف عند الخروج
-# ============================================================
-# ============================================================
+# 🎯 76. التنظيف عند الخروج
 # ============================================================
 
 func _exit_tree() -> void:

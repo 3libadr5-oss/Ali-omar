@@ -1,0 +1,11 @@
+[gd_scene format=3 uid="uid://bcdytu751i614"]
+
+[ext_resource type="Texture2D" uid="uid://djlqfwrmdatkb" path="res://Icons/icon.svg" id="1_50hst"]
+
+[node name="Forest" type="Node2D" unique_id=1900749815]
+
+[node name="Icon" type="Sprite2D" parent="." unique_id=559498440]
+modulate = Color(0, 0, 1, 1)
+position = Vector2(479.50006, 331)
+scale = Vector2(10.6796875, 4.828125)
+texture = ExtResource("1_50hst")

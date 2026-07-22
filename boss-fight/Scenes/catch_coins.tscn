@@ -1,0 +1,66 @@
+[gd_scene format=3 uid="uid://41pfpmqlbo5t"]
+
+[ext_resource type="Script" uid="uid://dxn1jh1g4tf4r" path="res://script/catch_coins.gd" id="1_dsxl6"]
+[ext_resource type="PackedScene" uid="uid://vdxe3ei3l6wm" path="res://Scenes/coin.tscn" id="2_dl6y3"]
+
+[node name="CatchCoins" type="Node2D" unique_id=432151798]
+script = ExtResource("1_dsxl6")
+coin_scene = ExtResource("2_dl6y3")
+
+[node name="Background" type="ColorRect" parent="." unique_id=2042696051]
+offset_right = 1284.0
+offset_bottom = 716.0
+color = Color(0.4862745, 0.4862745, 0.4862745, 0)
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=1031408426]
+
+[node name="TimerLabel" type="Label" parent="UI" unique_id=78568652]
+offset_left = 33.0
+offset_top = 33.0
+offset_right = 207.0
+offset_bottom = 67.0
+
+[node name="LocalScore" type="Label" parent="UI" unique_id=1763199285]
+offset_left = 38.0
+offset_top = 640.0
+offset_right = 380.0
+offset_bottom = 691.0
+
+[node name="GameOverPanel" type="Panel" parent="UI" unique_id=416160416]
+visible = false
+offset_left = 194.0
+offset_top = 145.0
+offset_right = 1041.0
+offset_bottom = 548.0
+
+[node name="ResultLabel" type="Label" parent="UI/GameOverPanel" unique_id=1654199558]
+layout_mode = 0
+offset_left = 268.0
+offset_top = 121.0
+offset_right = 562.0
+offset_bottom = 242.0
+
+[node name="Instructions" type="Label" parent="UI" unique_id=1668546136]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="ScoreBoard" type="Label" parent="UI" unique_id=1116759624]
+offset_left = 1046.0
+offset_top = 21.0
+offset_right = 1147.0
+offset_bottom = 44.0
+text = "📊 Scores:\\n "
+
+[node name="StatusLabel" type="Label" parent="UI" unique_id=1265191893]
+offset_left = 798.0
+offset_top = 590.0
+offset_right = 1202.0
+offset_bottom = 659.0
+
+[node name="Players" type="Node2D" parent="." unique_id=1898734785]
+
+[node name="Coins" type="Node2D" parent="." unique_id=78996623]
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=615507723]
+position = Vector2(600, 355)
+zoom = Vector2(0.91, 0.91)

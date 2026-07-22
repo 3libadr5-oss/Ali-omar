@@ -1,0 +1,293 @@
+[gd_scene format=3 uid="uid://d1wktho3hagad"]
+
+[ext_resource type="Script" uid="uid://ctrd0rstv4qac" path="res://script/GameManager.gd" id="1_t1dhk"]
+[ext_resource type="Script" uid="uid://dkn6xfahayhmc" path="res://managers/NetworkManager.gd" id="1_trj04"]
+[ext_resource type="Script" uid="uid://b70hq4dun23qu" path="res://managers/UIManager.gd" id="2_16hvj"]
+[ext_resource type="Script" uid="uid://du8h5yvtbc2ox" path="res://managers/GameModeManager.gd" id="3_vr1f0"]
+[ext_resource type="Script" uid="uid://bek1vg12si81p" path="res://Ui/SkinUI.gd" id="4_t1dhk"]
+[ext_resource type="Script" uid="uid://do8pug8e5ras1" path="res://Ui/MapUI.gd" id="5_5egv6"]
+[ext_resource type="Script" uid="uid://cyglrmmptnhui" path="res://gameplay/ScoreManager.gd" id="5_vtepg"]
+[ext_resource type="Script" uid="uid://dq3ma67gmw5sb" path="res://networking/SyncManager.gd" id="6_8dnnj"]
+[ext_resource type="Script" uid="uid://r6sxw2226y3x" path="res://Ui/MiniGameUI.gd" id="6_vtepg"]
+[ext_resource type="Script" uid="uid://21mli6vsxmc" path="res://Ui/LoadingScreenUI.gd" id="7_8dnnj"]
+[ext_resource type="Script" uid="uid://brm6memyyhge7" path="res://gameplay/PlayerSpawner.gd" id="8_m3bi6"]
+[ext_resource type="Script" uid="uid://c35nysiiebvxc" path="res://gameplay/SlotAnimation.gd" id="9_wyh8j"]
+
+[node name="MainMenu" type="Control" unique_id=1284034650]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -3.0
+offset_top = 2.0
+offset_right = -3.0
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_t1dhk")
+metadata/_edit_vertical_guides_ = [-25.0]
+
+[node name="Managers" type="Node" parent="." unique_id=672815758]
+
+[node name="NetworkManager" type="Node" parent="Managers" unique_id=232475378]
+script = ExtResource("1_trj04")
+
+[node name="UIManager" type="Node" parent="Managers" unique_id=1212171819]
+script = ExtResource("2_16hvj")
+
+[node name="GameModeManager" type="Node" parent="Managers" unique_id=142921426]
+script = ExtResource("3_vr1f0")
+
+[node name="ScoreManager" type="Node" parent="Managers" unique_id=918647601]
+script = ExtResource("5_vtepg")
+
+[node name="SyncManager" type="Node" parent="Managers" unique_id=1375872663]
+script = ExtResource("6_8dnnj")
+
+[node name="UI Components" type="Node" parent="." unique_id=1913203723]
+
+[node name="TopBar" type="HBoxContainer" parent="UI Components" unique_id=1264027125]
+offset_right = 1155.0
+offset_bottom = 46.0
+metadata/_edit_use_anchors_ = true
+
+[node name="SkinsButton" type="Button" parent="UI Components/TopBar" unique_id=706966169]
+layout_mode = 2
+text = "Skins"
+
+[node name="RandomMapButton" type="Button" parent="UI Components/TopBar" unique_id=1165768596]
+layout_mode = 2
+text = "Random"
+
+[node name="NameInput" type="LineEdit" parent="UI Components/TopBar" unique_id=626575179]
+layout_mode = 2
+placeholder_text = "Name...                                                                                           "
+alignment = 1
+max_length = 341
+expand_to_text_length = true
+
+[node name="SkinSelection" type="GridContainer" parent="UI Components" unique_id=903484317]
+offset_left = 2.0
+offset_top = 48.0
+offset_right = 604.0
+offset_bottom = 142.0
+columns = 5
+script = ExtResource("4_t1dhk")
+metadata/_edit_use_anchors_ = true
+
+[node name="MapSelection" type="HBoxContainer" parent="UI Components" unique_id=1331533463]
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -1113.0
+offset_top = 127.0
+offset_right = -236.0
+offset_bottom = 245.0
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_vertical = 3
+alignment = 1
+script = ExtResource("5_5egv6")
+metadata/_edit_use_anchors_ = true
+
+[node name="MiniGameSelection" type="HBoxContainer" parent="UI Components" unique_id=78505452]
+offset_left = 323.0
+offset_top = 49.0
+offset_right = 891.0
+offset_bottom = 167.0
+script = ExtResource("6_vtepg")
+metadata/_edit_use_anchors_ = true
+
+[node name="ModeContainer" type="HBoxContainer" parent="UI Components" unique_id=2027629108]
+offset_left = 23.0
+offset_top = 624.0
+offset_right = 299.0
+offset_bottom = 697.0
+metadata/_edit_use_anchors_ = true
+
+[node name="LoadingScreen" type="Panel" parent="UI Components" unique_id=1276434963]
+modulate = Color(1, 1, 1, 0.4745098)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("7_8dnnj")
+metadata/_edit_use_anchors_ = true
+
+[node name="MapName" type="Label" parent="UI Components/LoadingScreen" unique_id=1693354911]
+layout_mode = 0
+offset_left = 58.0
+offset_top = 560.0
+offset_right = 344.0
+offset_bottom = 612.0
+
+[node name="TextureRect" type="TextureRect" parent="UI Components/LoadingScreen" unique_id=158603391]
+layout_mode = 0
+offset_right = 1271.0
+offset_bottom = 718.0
+
+[node name="ProgressBar" type="ProgressBar" parent="UI Components/LoadingScreen" unique_id=975844654]
+layout_mode = 0
+offset_left = 41.0
+offset_top = 624.0
+offset_right = 1205.0
+offset_bottom = 651.0
+
+[node name="StatusLabel" type="Label" parent="UI Components/LoadingScreen" unique_id=452637245]
+layout_mode = 0
+offset_left = 974.0
+offset_top = 217.0
+offset_right = 1261.0
+offset_bottom = 624.0
+
+[node name="Title" type="Label" parent="UI Components" unique_id=2022315731]
+offset_left = 970.0
+offset_top = 55.0
+offset_right = 1190.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 36
+text = "🕹️ غرفة اللعبة"
+horizontal_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Gameplay" type="Node" parent="." unique_id=1973562590]
+
+[node name="PlayerSpawner" type="Node" parent="Gameplay" unique_id=1959262946]
+script = ExtResource("8_m3bi6")
+
+[node name="SlotAnimation" type="Node" parent="Gameplay" unique_id=2124531903]
+script = ExtResource("9_wyh8j")
+
+[node name="Level" type="Node2D" parent="Gameplay" unique_id=549699632]
+position = Vector2(503, 344)
+
+[node name="Network UI" type="Node" parent="." unique_id=184068256]
+
+[node name="RoomCodeInput" type="LineEdit" parent="Network UI" unique_id=1117288271]
+offset_left = 25.0
+offset_top = 200.0
+offset_right = 162.0
+offset_bottom = 256.5
+placeholder_text = "code room........."
+
+[node name="HostButton" type="Button" parent="Network UI" unique_id=2008660398]
+offset_left = 967.0
+offset_top = 188.0
+offset_right = 1234.0
+offset_bottom = 231.0
+theme_override_font_sizes/font_size = 25
+text = "Host"
+
+[node name="JoinButton" type="Button" parent="Network UI" unique_id=1957234108]
+offset_left = 970.0
+offset_top = 253.0
+offset_right = 1233.0
+offset_bottom = 296.0
+theme_override_font_sizes/font_size = 25
+text = "Join"
+
+[node name="RoomCodeDisplay" type="Label" parent="Network UI" unique_id=1149914033]
+offset_left = 26.0
+offset_top = 144.0
+offset_right = 134.0
+offset_bottom = 167.0
+
+[node name="PlayerList" type="ItemList" parent="Network UI" unique_id=861056578]
+offset_top = 388.5
+offset_right = 1152.0
+offset_bottom = 388.5
+
+[node name="IPInput" type="LineEdit" parent="Network UI" unique_id=1615446800]
+offset_left = 581.0
+offset_right = 658.0
+offset_bottom = 46.0
+placeholder_text = "IP INPUT"
+expand_to_text_length = true
+
+[node name="Lobby" type="Node" parent="." unique_id=284661047]
+
+[node name="StatusLabel" type="Label" parent="Lobby" unique_id=2015698665]
+offset_left = 26.0
+offset_top = 175.0
+offset_right = 381.0
+offset_bottom = 198.0
+text = "Code Room :"
+metadata/_edit_use_anchors_ = true
+
+[node name="StartButton" type="Button" parent="Lobby" unique_id=1416862185]
+offset_left = 439.0
+offset_top = 661.0
+offset_right = 817.0
+offset_bottom = 697.5
+text = "start game"
+metadata/_edit_use_anchors_ = true
+
+[node name="CountdownLabel" type="Label" parent="Lobby" unique_id=2010599162]
+offset_left = 18.0
+offset_top = 266.0
+offset_right = 1170.0
+offset_bottom = 289.0
+metadata/_edit_use_anchors_ = true
+
+[node name="PlayerSlot1" type="Control" parent="Lobby" unique_id=366169330]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 401.0
+offset_top = 271.0
+offset_right = 592.0
+offset_bottom = 459.0
+
+[node name="SkinTexture" type="TextureRect" parent="Lobby/PlayerSlot1" unique_id=319163654]
+layout_mode = 0
+offset_right = 189.0
+offset_bottom = 141.0
+
+[node name="NameLabel" type="Label" parent="Lobby/PlayerSlot1" unique_id=993401191]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -19.5
+offset_top = -21.0
+offset_right = 20.5
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="PlayerSlot2" type="Control" parent="Lobby" unique_id=1988872387]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 664.0
+offset_top = 271.0
+offset_right = 855.0
+offset_bottom = 459.0
+
+[node name="SkinTexture" type="TextureRect" parent="Lobby/PlayerSlot2" unique_id=1591371756]
+layout_mode = 0
+offset_right = 189.0
+offset_bottom = 141.0
+
+[node name="NameLabel" type="Label" parent="Lobby/PlayerSlot2" unique_id=167928852]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -19.5
+offset_top = -21.0
+offset_right = 20.5
+offset_bottom = 2.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=2018104914]
+spawn_path = NodePath("../Gameplay/Level")
+
+[connection signal="pressed" from="Network UI/HostButton" to="." method="_on_host_pressed"]
+[connection signal="pressed" from="Network UI/JoinButton" to="." method="_on_join_pressed"]

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="SkinData" format=3 uid="uid://dl44y4l2evhc3"]
+
+[ext_resource type="Script" uid="uid://deo0oijqrbuw1" path="res://script/SkinData.gd" id="1_5wov0"]
+[ext_resource type="Texture2D" uid="uid://djlqfwrmdatkb" path="res://Icons/icon.svg" id="1_6nc0j"]
+[ext_resource type="PackedScene" uid="uid://dso5yueecjkdm" path="res://player.tscn" id="2_c4n8b"]
+
+[resource]
+script = ExtResource("1_5wov0")
+name = "1"
+scene = ExtResource("2_c4n8b")
+icon = ExtResource("1_6nc0j")
+metadata/_custom_type_script = "uid://deo0oijqrbuw1"

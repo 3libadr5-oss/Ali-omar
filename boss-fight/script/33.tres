@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="MapData" format=3 uid="uid://nldugk4htbfj"]
+
+[ext_resource type="Texture2D" uid="uid://djlqfwrmdatkb" path="res://Icons/icon.svg" id="1_o3mhy"]
+[ext_resource type="Script" uid="uid://bmwq21psib0a4" path="res://script/MapData.gd" id="1_t2enk"]
+[ext_resource type="PackedScene" uid="uid://bcgldimwrebtb" path="res://Scenes/Levels/forest.tscn" id="2_gkaqr"]
+
+[resource]
+script = ExtResource("1_t2enk")
+name = "forest"
+scene = ExtResource("2_gkaqr")
+icon = ExtResource("1_o3mhy")
+metadata/_custom_type_script = "uid://bmwq21psib0a4"

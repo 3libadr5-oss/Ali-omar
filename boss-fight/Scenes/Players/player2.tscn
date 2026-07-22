@@ -1,0 +1,276 @@
+[gd_scene format=3 uid="uid://dthxnj3axmuo2"]
+
+[ext_resource type="Script" uid="uid://brcooevx1e73f" path="res://script/player.gd" id="1_q6vqx"]
+[ext_resource type="Texture2D" uid="uid://c27ugxe24b4jo" path="res://assets/morab3.png" id="2_q6vqx"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5p3o1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_q6vqx")
+}],
+"loop": false,
+"name": &"attack_1",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_q6vqx")
+}],
+"loop": false,
+"name": &"attack_2",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_q6vqx")
+}],
+"loop": false,
+"name": &"dash",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_q6vqx")
+}],
+"loop": true,
+"name": &"framel",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_q6vqx")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_q6vqx")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_1rfr6"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_5p3o1"]
+radius = 20.024984
+
+[sub_resource type="Animation" id="Animation_xvxwx"]
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SwordArea/CollisionShape2D:disabled")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("SwordArea/sword:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.014716029]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SwordArea/sword:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(-5.722046e-06, -1.9073486e-06)]
+}
+
+[sub_resource type="Animation" id="Animation_5s26g"]
+resource_name = "attack_1"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SwordArea/sword:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(-2, -2),
+"update": 0,
+"values": [-0.50876623, 0.263968]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("SwordArea/CollisionShape2D:disabled")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SwordArea/sword:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_5p3o1"]
+resource_name = "attack_2"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("SwordArea/CollisionShape2D:disabled")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 1,
+"values": [false, true]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("SwordArea/sword:rotation")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [0.014716029]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("SwordArea/sword:position")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 0.14),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector2(-5.722046e-06, -1.9073486e-06), Vector2(10.000001, 2.2737368e-13)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_85y8y"]
+_data = {
+&"RESET": SubResource("Animation_xvxwx"),
+&"attack_1": SubResource("Animation_5s26g"),
+&"attack_2": SubResource("Animation_5p3o1")
+}
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_xvxwx"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:MAX_SPEED")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("AnimatedSprite2D:flip_h")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:ACCELERATION")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:FRICTION")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath(".:DASH_SPEED")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:DASH_DURATION")
+properties/6/spawn = true
+properties/6/replication_mode = 1
+properties/7/path = NodePath(".:DASH_COOLDOWN")
+properties/7/spawn = true
+properties/7/replication_mode = 1
+properties/8/path = NodePath(".:LUNGE_SPEED")
+properties/8/spawn = true
+properties/8/replication_mode = 1
+
+[node name="Player" type="CharacterBody2D" unique_id=624666312]
+script = ExtResource("1_q6vqx")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=722555162]
+texture_filter = 1
+position = Vector2(-0.48000145, 0)
+scale = Vector2(0.485, 0.485)
+sprite_frames = SubResource("SpriteFrames_5p3o1")
+animation = &"walk"
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=257502697]
+position = Vector2(-0.5200043, 0.23999786)
+scale = Vector2(1.355, 1.355)
+shape = SubResource("RectangleShape2D_1rfr6")
+
+[node name="DashTimer" type="Timer" parent="." unique_id=1888305740]
+one_shot = true
+
+[node name="DashCooldownTimer" type="Timer" parent="." unique_id=689309973]
+wait_time = 0.2
+one_shot = true
+
+[node name="SwordArea" type="Area2D" parent="." unique_id=2104155633]
+unique_name_in_owner = true
+position = Vector2(1.5199986, 1)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="SwordArea" unique_id=2075295187]
+position = Vector2(23, 2)
+shape = SubResource("CircleShape2D_5p3o1")
+disabled = true
+
+[node name="sword" type="ColorRect" parent="SwordArea" unique_id=179454257]
+offset_right = 39.092087
+offset_bottom = 1.9999866
+rotation = 0.014716029
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1588347925]
+libraries/ = SubResource("AnimationLibrary_85y8y")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=620255866]
+replication_config = SubResource("SceneReplicationConfig_xvxwx")
+
+[node name="NameLabel" type="Label" parent="." unique_id=1123839728]
+offset_left = -15.48
+offset_top = -28.999998
+offset_right = 567.85333
+offset_bottom = 278.0
+scale = Vector2(0.05, 0.05)
+theme_override_font_sizes/font_size = 225
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=897974335]
+position = Vector2(0.51999855, 5)
+zoom = Vector2(2.12, 2.12)
+limit_enabled = false
+
+[connection signal="timeout" from="DashTimer" to="." method="_on_dash_timer_timeout"]
+[connection signal="body_entered" from="SwordArea" to="." method="_on_sword_area_body_entered"]
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_finished"]

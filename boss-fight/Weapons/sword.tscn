@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://bwgqko53y2rq6"]
+
+[ext_resource type="Script" uid="uid://cbg31c46kepat" path="res://Weapons/sword.gd" id="1_p5cha"]
+[ext_resource type="Texture2D" uid="uid://ctp3pybc7ds6g" path="res://assets/Ranitayas Swords Pack (16+ Pixelart Swords)/Outline/Sword9.png" id="2_djh6v"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_p5cha"]
+size = Vector2(23, 7)
+
+[node name="Sword" type="Node2D" unique_id=1081456190]
+script = ExtResource("1_p5cha")
+
+[node name="SwordSprite" type="Sprite2D" parent="." unique_id=195009908]
+texture = ExtResource("2_djh6v")
+
+[node name="Hitbox" type="Area2D" parent="." unique_id=1673274628]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Hitbox" unique_id=39805759]
+position = Vector2(4.5, -0.5)
+shape = SubResource("RectangleShape2D_p5cha")
+
+[connection signal="body_entered" from="Hitbox" to="." method="_on_hitbox_body_entered"]

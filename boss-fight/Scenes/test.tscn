@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://w53k3vx0psyd"]
+
+[ext_resource type="PackedScene" uid="uid://dso5yueecjkdm" path="res://player.tscn" id="2_ittf7"]
+
+[node name="Node2D" type="Node2D" unique_id=1064712408]
+
+[node name="Player" parent="." unique_id=624666312 instance=ExtResource("2_ittf7")]
+position = Vector2(1136, 612)
+
+[node name="Control" type="Control" parent="." unique_id=203504402]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0

@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="MiniGameData" format=3 uid="uid://pgquejgy0eev"]
+
+[ext_resource type="Script" uid="uid://bjbkwkhacbiwp" path="res://script/MiniGameData.gd" id="1_76nl1"]
+[ext_resource type="PackedScene" uid="uid://41pfpmqlbo5t" path="res://Scenes/catch_coins.tscn" id="1_flkhm"]
+
+[sub_resource type="Gradient" id="Gradient_76nl1"]
+colors = PackedColorArray(0, 0, 1, 1, 0, 0, 0.6745098, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_flkhm"]
+gradient = SubResource("Gradient_76nl1")
+fill = 1
+fill_from = Vector2(0.5014245, 0.47008547)
+fill_to = Vector2(0.92877495, 0.094017096)
+
+[resource]
+script = ExtResource("1_76nl1")
+name = "Coin fast"
+description = "awds"
+icon = SubResource("GradientTexture2D_flkhm")
+scene = ExtResource("1_flkhm")
+metadata/_custom_type_script = "uid://bjbkwkhacbiwp"

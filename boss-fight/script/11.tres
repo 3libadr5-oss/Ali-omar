@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="MapData" format=3 uid="uid://b64jiri6gadm3"]
+
+[ext_resource type="Script" uid="uid://bmwq21psib0a4" path="res://script/MapData.gd" id="1_h5axg"]
+[ext_resource type="Texture2D" uid="uid://djlqfwrmdatkb" path="res://Icons/icon.svg" id="1_hr7at"]
+[ext_resource type="PackedScene" uid="uid://bcdytu751i614" path="res://Scenes/Levels/ice.tscn" id="2_hi62g"]
+
+[sub_resource type="Gradient" id="Gradient_hr7at"]
+colors = PackedColorArray(0, 0, 1, 1, 1, 1, 1, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_hi62g"]
+gradient = SubResource("Gradient_hr7at")
+
+[resource]
+script = ExtResource("1_h5axg")
+name = "ice"
+scene = ExtResource("2_hi62g")
+icon = ExtResource("1_hr7at")
+preview_image = SubResource("GradientTexture1D_hi62g")
+metadata/_custom_type_script = "uid://bmwq21psib0a4"

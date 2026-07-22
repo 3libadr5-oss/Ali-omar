@@ -1,0 +1,151 @@
+[gd_scene format=3 uid="uid://2e10wq12nbta"]
+
+[ext_resource type="Script" uid="uid://xp8hqc8gv4r5" path="res://script/player_1.gd" id="1_ymh3i"]
+[ext_resource type="PackedScene" uid="uid://bwgqko53y2rq6" path="res://Weapons/sword.tscn" id="2_foswa"]
+[ext_resource type="Texture2D" uid="uid://c6nva24ytq0g6" path="res://assets/KOBTAN.png" id="2_ymh3i"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_5p3o1"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ymh3i")
+}],
+"loop": false,
+"name": &"attack_1",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ymh3i")
+}],
+"loop": false,
+"name": &"attack_2",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ymh3i")
+}],
+"loop": false,
+"name": &"dash",
+"speed": 5.0
+}, {
+"frames": [],
+"loop": true,
+"name": &"framel",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ymh3i")
+}],
+"loop": true,
+"name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_ymh3i")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="Animation" id="Animation_xvxwx"]
+length = 0.2
+
+[sub_resource type="Animation" id="Animation_5s26g"]
+resource_name = "attack_1"
+length = 0.2
+
+[sub_resource type="Animation" id="Animation_5p3o1"]
+resource_name = "attack_2"
+length = 0.2
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_85y8y"]
+_data = {
+&"RESET": SubResource("Animation_xvxwx"),
+&"attack_1": SubResource("Animation_5s26g"),
+&"attack_2": SubResource("Animation_5p3o1")
+}
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_xvxwx"]
+properties/0/path = NodePath(".:position")
+properties/0/spawn = true
+properties/0/replication_mode = 1
+properties/1/path = NodePath(".:MAX_SPEED")
+properties/1/spawn = true
+properties/1/replication_mode = 1
+properties/2/path = NodePath("AnimatedSprite2D:flip_h")
+properties/2/spawn = true
+properties/2/replication_mode = 1
+properties/3/path = NodePath(".:ACCELERATION")
+properties/3/spawn = true
+properties/3/replication_mode = 1
+properties/4/path = NodePath(".:FRICTION")
+properties/4/spawn = true
+properties/4/replication_mode = 1
+properties/5/path = NodePath(".:DASH_SPEED")
+properties/5/spawn = true
+properties/5/replication_mode = 1
+properties/6/path = NodePath(".:DASH_DURATION")
+properties/6/spawn = true
+properties/6/replication_mode = 1
+properties/7/path = NodePath(".:DASH_COOLDOWN")
+properties/7/spawn = true
+properties/7/replication_mode = 1
+properties/8/path = NodePath(".:LUNGE_SPEED")
+properties/8/spawn = true
+properties/8/replication_mode = 1
+
+[node name="Player" type="CharacterBody2D" unique_id=624666312]
+script = ExtResource("1_ymh3i")
+weapon_scene = ExtResource("2_foswa")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=722555162]
+texture_filter = 1
+position = Vector2(-0.5599995, -1.5599995)
+scale = Vector2(1.045, 1.045)
+sprite_frames = SubResource("SpriteFrames_5p3o1")
+animation = &"walk"
+
+[node name="CollisionShape2D" type="CollisionPolygon2D" parent="." unique_id=1176452451]
+position = Vector2(2.369997, 0.3299961)
+rotation = 5.9730373e-05
+scale = Vector2(4.225, 4.225)
+polygon = PackedVector2Array(-0.614, -4.35, 3.214, -0.545, -0.567, 3.46, -4.304, -0.595)
+
+[node name="DashTimer" type="Timer" parent="." unique_id=1888305740]
+one_shot = true
+
+[node name="DashCooldownTimer" type="Timer" parent="." unique_id=689309973]
+wait_time = 0.2
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1588347925]
+libraries/ = SubResource("AnimationLibrary_85y8y")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=620255866]
+replication_config = SubResource("SceneReplicationConfig_xvxwx")
+
+[node name="NameLabel" type="Label" parent="." unique_id=919223582]
+offset_left = -14.560001
+offset_top = -34.56
+offset_right = 568.7733
+offset_bottom = 272.44
+scale = Vector2(0.05, 0.05)
+theme_override_font_sizes/font_size = 225
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1752264138]
+position = Vector2(-0.5600033, -0.5600033)
+zoom = Vector2(2.12, 2.12)
+limit_enabled = false
+
+[node name="WeaponHolder" type="Node2D" parent="." unique_id=225280137]
+position = Vector2(5, 0)
+
+[connection signal="timeout" from="DashTimer" to="." method="_on_dash_timer_timeout"]
+[connection signal="animation_finished" from="AnimationPlayer" to="." method="_on_animation_finished"]

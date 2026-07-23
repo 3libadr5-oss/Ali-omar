@@ -216,6 +216,7 @@ properties/8/replication_mode = 1
 
 [node name="Player" type="CharacterBody2D" unique_id=624666312]
 script = ExtResource("1_q6vqx")
+enable_jump = false
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=722555162]
 texture_filter = 1
@@ -246,8 +247,8 @@ shape = SubResource("CircleShape2D_5p3o1")
 disabled = true
 
 [node name="sword" type="ColorRect" parent="SwordArea" unique_id=179454257]
-offset_right = 39.092087
-offset_bottom = 1.9999866
+offset_right = 39.09208
+offset_bottom = 1.9999847
 rotation = 0.014716029
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1588347925]

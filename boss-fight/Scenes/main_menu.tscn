@@ -2,12 +2,15 @@
 
 [ext_resource type="Script" uid="uid://c0p7755ffuevn" path="res://script/main_menu.gd" id="1_ne3fb"]
 [ext_resource type="Resource" uid="uid://dl44y4l2evhc3" path="res://script/1.tres" id="2_ce3w2"]
+[ext_resource type="Script" uid="uid://deo0oijqrbuw1" path="res://script/SkinData.gd" id="2_vr1f0"]
 [ext_resource type="Resource" uid="uid://dx8t81lcjmype" path="res://script/2.tres" id="3_n45e2"]
 [ext_resource type="Resource" uid="uid://bxthw534moc5w" path="res://script/3.tres" id="4_opfnp"]
 [ext_resource type="Resource" uid="uid://b64jiri6gadm3" path="res://script/11.tres" id="5_cp0ys"]
+[ext_resource type="Script" uid="uid://bmwq21psib0a4" path="res://script/MapData.gd" id="6_t1dhk"]
 [ext_resource type="Resource" uid="uid://3lmk2thj0e0g" path="res://script/22.tres" id="6_yhxw7"]
 [ext_resource type="Resource" uid="uid://nldugk4htbfj" path="res://script/33.tres" id="7_trj04"]
 [ext_resource type="Resource" uid="uid://pgquejgy0eev" path="res://script/cion.tres" id="8_yhxw7"]
+[ext_resource type="Script" uid="uid://bjbkwkhacbiwp" path="res://script/MiniGameData.gd" id="10_5egv6"]
 
 [node name="MainMenu" type="Control" unique_id=1284034650]
 layout_mode = 3
@@ -21,13 +24,9 @@ offset_bottom = 2.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ne3fb")
-skin1 = ExtResource("2_ce3w2")
-skin2 = ExtResource("3_n45e2")
-skin3 = ExtResource("4_opfnp")
-map1 = ExtResource("5_cp0ys")
-map2 = ExtResource("6_yhxw7")
-map3 = ExtResource("7_trj04")
-minigame1 = ExtResource("8_yhxw7")
+skins = Array[ExtResource("2_vr1f0")]([ExtResource("2_ce3w2"), ExtResource("3_n45e2"), ExtResource("4_opfnp")])
+maps = Array[ExtResource("6_t1dhk")]([ExtResource("5_cp0ys"), ExtResource("6_yhxw7"), ExtResource("7_trj04")])
+minigames = Array[ExtResource("10_5egv6")]([ExtResource("8_yhxw7")])
 lobby_positions = Array[Vector2]([Vector2(200, 5), Vector2(400, 5), Vector2(-600, 5), Vector2(800, 5), Vector2(1000, 300)])
 lobby_scale = 1.945
 metadata/_edit_vertical_guides_ = [-25.0]

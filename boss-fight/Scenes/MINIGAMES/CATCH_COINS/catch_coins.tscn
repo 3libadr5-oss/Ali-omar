@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://41pfpmqlbo5t"]
 
-[ext_resource type="Script" uid="uid://dxn1jh1g4tf4r" path="res://script/catch_coins.gd" id="1_dsxl6"]
-[ext_resource type="PackedScene" uid="uid://vdxe3ei3l6wm" path="res://Scenes/coin.tscn" id="2_dl6y3"]
+[ext_resource type="Script" uid="uid://dxn1jh1g4tf4r" path="res://Scenes/MINIGAMES/CATCH_COINS/catch_coins.gd" id="1_dsxl6"]
+[ext_resource type="PackedScene" uid="uid://vdxe3ei3l6wm" path="res://Scenes/MINIGAMES/CATCH_COINS/coin.tscn" id="2_dl6y3"]
 
 [node name="CatchCoins" type="Node2D" unique_id=432151798]
 script = ExtResource("1_dsxl6")

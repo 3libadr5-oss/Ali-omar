@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://vdxe3ei3l6wm"]
 
-[ext_resource type="Script" uid="uid://ceclv3a555eyv" path="res://Scenes/coin.gd" id="1_2qo34"]
+[ext_resource type="Script" uid="uid://ceclv3a555eyv" path="res://Scenes/MINIGAMES/CATCH_COINS/coin.gd" id="1_2qo34"]
 
 [sub_resource type="Gradient" id="Gradient_sgwqp"]
 colors = PackedColorArray(1, 1, 0, 1, 1, 1, 1, 0)

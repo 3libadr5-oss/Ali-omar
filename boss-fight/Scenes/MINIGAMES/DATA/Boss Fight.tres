@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="MiniGameData" format=3 uid="uid://dikd2o826ygl1"]
+
+[ext_resource type="Script" uid="uid://bjbkwkhacbiwp" path="res://script/MiniGameData.gd" id="1_q1kxc"]
+
+[sub_resource type="Gradient" id="Gradient_q1kxc"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_wr0th"]
+gradient = SubResource("Gradient_q1kxc")
+
+[sub_resource type="PackedScene" id="PackedScene_qabkv"]
+
+[resource]
+script = ExtResource("1_q1kxc")
+name = "Boss Fight"
+icon = SubResource("GradientTexture2D_wr0th")
+scene = SubResource("PackedScene_qabkv")
+metadata/_custom_type_script = "uid://bjbkwkhacbiwp"
